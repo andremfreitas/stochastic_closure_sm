@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
-Adapted ML inference (v2_updt-style: deterministic NN mean + additive stochasticity on last 2 shells)
+ML inference for the neural Langevin closure (deterministic NN mean + additive
+stochasticity on the last 2 shells)
 to run:
 
   - many ICs
@@ -91,7 +92,7 @@ dt_c  = tf.constant(dt, dtype=tf_c_prec)
 # User settings
 # ============================================================
 data_path = "u_40_2.npz"
-models_dir = "m15_v2_updt/"
+models_dir = "outputs_langevin_closure/"
 out_dir = models_dir  # or set to something else like "npzs_ml_var_v2"
 
 NOISE_STEPS = args.noise_steps     # oarger than num_steps if you want fully stochastic
@@ -115,7 +116,7 @@ jit_boolean = True
 
 # outputs
 SAVE_MEAN = True
-OUT_PREFIX = "m15_v2_updt_1step_noise"
+OUT_PREFIX = "langevin_closure_1step_noise"
 
 # ============================================================
 # Log save schedule: uniform density in log10(step)
@@ -430,4 +431,3 @@ for model_name in keras_files:
         np.savez_compressed(out_path, var_u=var_storage, meta=meta)
 
     print(f"Saved: {out_path}")
-

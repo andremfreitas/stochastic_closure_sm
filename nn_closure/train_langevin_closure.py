@@ -201,7 +201,7 @@ for msteps in msteps_interval:
 print(msteps_sched)
 print(epochs)
 
-directory = "m15_v2_updt/"
+directory = "outputs_langevin_closure/"
 
 if not os.path.exists(directory):
     os.makedirs(directory)

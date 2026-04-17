@@ -61,7 +61,7 @@ k2_0 = np.array(k2_list, dtype=np_c_prec)              # (N+2,)
 # User settings
 # -----------------------
 data_path = "u_40_2.npz"
-models_dir = "m15_v2_updt/"
+models_dir = "outputs_langevin_closure/"
 out_dir = models_dir
 
 num_steps = 100_000

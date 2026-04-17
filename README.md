@@ -1,154 +1,128 @@
-# Solver-in-the-Loop Closure for Shell Models of Turbulence
+# Stochastic closures for turbulence in the Sabra shell model
 
-Code accompanying the papers
+This repository contains the code used in the paper:
 
-**Solver-in-the-loop approach to closure of shell models of turbulence**  
-*Phys. Rev. Fluids (2025)*
+> **On the importance of stochasticity in closures of turbulence**.
 
-**A posteriori closure of turbulence models: are symmetries preserved?**  
-*European Journal of Mechanics / B Fluids (2026)*
+It provides three complementary components:
 
+1. **Landau–Lifshitz fluctuating-hydrodynamics reference solver** (stochastic DNS-like shell-model simulations).
+2. **Data-driven stochastic closure (neural Langevin closure)** for LES.
+3. **Phenomenological stochastic closure (K41 / multiplier-based)** for LES.
 
----
-
-## Description
-
-This repository contains the code used to train and evaluate neural network closures for the **Sabra shell model of turbulence** using a **solver-in-the-loop (a posteriori) training strategy**.
-
-Instead of learning instantaneous subgrid terms independently of the dynamics, the neural network is embedded inside the numerical solver during training. The model therefore learns how its predictions influence the time evolution of the system.
-
-The numerical experiments presented in the two papers above were performed using the scripts contained in this repository.
-
-For full methodological and theoretical details, please refer to the papers.
-
+The main purpose is to compare finite-time uncertainty growth (ensemble variance propagation) between fully resolved stochastic dynamics and reduced-order closures.
 
 ---
 
 ## Repository structure
 
+```text
+.
+├── solver_landau_lifshitz_ensemble.py
+├── nn_closure/
+│   ├── train_langevin_closure.py
+│   ├── run_langevin_rollout.py
+│   └── run_langevin_ensemble_variance.py
+├── k41_closure/
+│   └── run_k41_ensemble.py
+├── requirements.txt
+├── README.md
+└── LICENSE
 ```
-solver.py          Generate DNS data from the fully resolved shell model
-train.py           Train the neural closure using solver-in-the-loop learning
-inf.py             Run inference with a trained model
 
-requirements.txt   Python dependencies
-README.md          Documentation
-LICENSE            Repository license
-```
+### Script roles
 
+- `solver_landau_lifshitz_ensemble.py`  
+  Generates ensemble trajectories for a **single initial condition** with independent stochastic forcing in the Sabra–Landau–Lifshitz model.
+
+- `nn_closure/train_langevin_closure.py`  
+  Trains the **neural Langevin closure** (solver-in-the-loop / a posteriori training).
+
+- `nn_closure/run_langevin_rollout.py`  
+  Runs long rollout inference using trained neural closure models and saves trajectory snapshots.
+
+- `nn_closure/run_langevin_ensemble_variance.py`  
+  Runs IC × ensemble inference and saves ensemble statistics (variance, and optionally mean).
+
+- `k41_closure/run_k41_ensemble.py`  
+  Runs the **phenomenological stochastic K41 (multiplier-based) closure** for one IC and many ensemble members.
 
 ---
 
 ## Installation
 
-Create a Python environment and install the required dependencies:
+Use a Python environment with the dependencies in `requirements.txt`:
 
-```
+```bash
 pip install -r requirements.txt
 ```
 
+> Note: `solver_landau_lifshitz_ensemble.py` and `k41_closure/run_k41_ensemble.py` rely on **JAX**; the neural closure scripts rely on **TensorFlow/Keras**.
 
 ---
 
-## 1. Generate training data
+## Typical workflow
 
-Run the shell-model solver to generate DNS trajectories:
+### 1) Generate fluctuating-hydrodynamics reference trajectories
 
-```
-python solver.py
-```
-
-The output dataset contains shell velocities with the structure
-
-```
-u[shell, initial_condition, time]
+```bash
+python solver_landau_lifshitz_ensemble.py --ic-index 0 --n-ens 1024
 ```
 
-These trajectories serve as ground-truth data for training the closure model.
+This produces an `.npz` file with complex shell trajectories for the chosen initial condition and ensemble size.
 
+### 2) Train the neural Langevin closure
+
+```bash
+python nn_closure/train_langevin_closure.py
+```
+
+The training script expects a pre-generated dataset (default filename in the script is `u_40_2.npz`) and writes `.keras` model checkpoints.
+
+### 3) Run neural closure inference
+
+Trajectory rollout:
+
+```bash
+python nn_closure/run_langevin_rollout.py
+```
+
+Variance-focused ensemble run:
+
+```bash
+python nn_closure/run_langevin_ensemble_variance.py --noise-steps 1000000
+```
+
+### 4) Run the phenomenological K41 stochastic closure
+
+```bash
+python k41_closure/run_k41_ensemble.py --ic-index 0 --n-ens 1024
+```
 
 ---
 
-## 2. Train the neural closure
+## Naming cleanup
 
-Training is performed by embedding the neural network inside the reduced solver and unrolling the dynamics for several time steps before computing the loss.
+For clarity and reproducibility, the main scripts were renamed from earlier internal names:
 
-```
-python train.py path_to_dataset.npz
-```
-
-The trained model is saved as a `.keras` file.
-
-
----
-
-## 3. Run inference
-
-Once a model has been trained, long-time trajectories of the reduced system can be generated with
-
-```
-python inf.py
-```
-
-The script loads the trained model, evolves the reduced system forward in time, and saves the predicted trajectories.
-
-
----
-
-## Numerical parameters
-
-Typical parameters used in the experiments:
-
-```
-Number of shells (DNS): 40
-Cutoff shell:           14
-Viscosity:              1e-12
-DNS timestep:           1e-8
-LES timestep:           1e-5
-```
-
+- `solver_save_linear_repeated_ic.py` → `solver_landau_lifshitz_ensemble.py`
+- `nn_closure/train_stochastic.py` → `nn_closure/train_langevin_closure.py`
+- `nn_closure/inf_v2.py` → `nn_closure/run_langevin_rollout.py`
+- `nn_closure/inf_v2_many_same_ics.py` → `nn_closure/run_langevin_ensemble_variance.py`
+- `k41_closure/smk_save_linear_repeated_ic.py` → `k41_closure/run_k41_ensemble.py`
 
 ---
 
 ## Citation
 
-If you use this code in your research, please cite the following works.
+If you use this repository, please cite:
 
-### Solver-in-the-loop closure
+- Freitas et al., *On the importance of stochasticity in closures of turbulence*.
 
-```
-@article{freitas25,
-  title = {Solver-in-the-loop approach to closure of shell models of turbulence},
-  author = {Freitas, André and Um, Kiwon and Desbrun, Mathieu and Buzzicotti, Michele and Biferale, Luca},
-  journal = {Phys. Rev. Fluids},
-  volume = {10},
-  issue = {4},
-  pages = {044602},
-  year = {2025},
-  publisher = {American Physical Society},
-  doi = {10.1103/PhysRevFluids.10.044602}
-}
-```
-
-### Symmetry preservation in a posteriori closures
-
-```
-@article{freitas26,
-title = {A posteriori closure of turbulence models: Are symmetries preserved?},
-journal = {European Journal of Mechanics - B/Fluids},
-volume = {119},
-pages = {204496},
-year = {2026},
-issn = {0997-7546},
-doi = {https://doi.org/10.1016/j.euromechflu.2026.204496},
-url = {https://www.sciencedirect.com/science/article/pii/S0997754626000439},
-author = {André Freitas and Kiwon Um and Mathieu Desbrun and Michele Buzzicotti and Luca Biferale},
-```
-
+(You can replace this entry with the final journal reference once available.)
 
 ---
 
 ## License
 
-This project is licensed under the **MIT License**.  
-See the `LICENSE` file for details.
+MIT License (see `LICENSE`).

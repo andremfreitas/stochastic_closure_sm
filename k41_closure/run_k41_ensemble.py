@@ -13,11 +13,11 @@ jax.config.update("jax_enable_x64", True)
 # ============================================================
 # CLI
 # ============================================================
-parser = argparse.ArgumentParser(description="LES (stochastic SMK) with LINEAR saves for ONE IC + many ensembles.")
+parser = argparse.ArgumentParser(description="LES (stochastic K41/SMK closure) with LINEAR saves for ONE IC + many ensembles.")
 parser.add_argument("--ic-index", type=int, default=0, help="Which IC index to use from GT file")
 parser.add_argument("--n-ens", type=int, default=256, help="Number of ensemble members")
 parser.add_argument("--t0", type=int, default=0, help="Time index for the IC in GT file")
-parser.add_argument("--out", type=str, default="npzs/sabra_smk_u_linear_oneIC_manyEns.npz", help="Output npz path")
+parser.add_argument("--out", type=str, default="npzs/k41_ensemble_one_ic.npz", help="Output npz path")
 args = parser.parse_args()
 
 # ============================================================
@@ -357,4 +357,3 @@ np.savez_compressed(tmp_path, u=save_u, meta=meta)
 os.replace(tmp_path, final_path)
 print(f"[done] wrote {Path(final_path).resolve()}")
 print("save_u shape:", save_u.shape)
-
