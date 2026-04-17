@@ -1,0 +1,6 @@
+tensorflow>=2.10
+jax>=0.4
+jaxlib>=0.4
+numpy
+matplotlib
+tqdm
