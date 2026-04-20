@@ -1,0 +1,6 @@
+tensorflow
+jax
+jaxlib
+numpy
+matplotlib
+tqdm
