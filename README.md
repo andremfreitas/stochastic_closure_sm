@@ -2,10 +2,8 @@
 
 Code accompanying the paper
 
-## [On the importance of stochasticity in closures of turbulence](https://iopscience.iop.org/article/10.1209/0295-5075/ae5a56)
-
-**André Freitas, Luca Biferale, Mathieu Desbrun, Gregory Eyink, Alexei Mailybaev, and Kiwon Um**  
-*Europhysics Letters (2026)*
+- [On the importance of stochasticity in closures of turbulence](https://iopscience.iop.org/article/10.1209/0295-5075/ae5a56)  
+  *Freitas et al., Europhysics Letters (2026)*
 
 ---
 
